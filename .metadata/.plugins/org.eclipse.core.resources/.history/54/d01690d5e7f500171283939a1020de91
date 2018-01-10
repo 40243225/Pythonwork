@@ -1,0 +1,69 @@
+# -*- coding: utf8 -*-
+# coding: utf8
+
+from pyspark import SparkContext
+from pyspark import  SparkConf
+from pyspark.sql import Row
+from pyspark.sql import SQLContext
+from pyspark.ml.feature import StringIndexer
+from pyspark.ml.feature import  Tokenizer
+from pyspark.mllib.feature import HashingTF, IDF
+from pyspark.ml.feature import CountVectorizer
+import sys
+import time
+
+def SetLogger( sc ):
+    logger = sc._jvm.org.apache.log4j
+    logger.LogManager.getLogger("org"). setLevel( logger.Level.ERROR )
+    logger.LogManager.getLogger("akka").setLevel( logger.Level.ERROR )
+    logger.LogManager.getRootLogger().setLevel(logger.Level.ERROR)
+    
+def SetPath(sc):
+    global Path
+    if sc.master[0:5]=="local" :
+        Path="file:/home/hduser/pythonwork/PythonProject/"
+    else:   
+        Path="hdfs://master:9000/user/hduser/"
+       
+def  CreateSparkContext():
+    sparkConf =SparkConf().setAppName("mlTF-IDF").set("spark.ui.showConsoleProgress","false")
+    sc = SparkContext(conf = sparkConf)
+    print("master="+sc.master)
+    SetLogger(sc)
+    SetPath(sc)
+    return (sc)
+    
+if __name__ == "__main__":
+    start = time.time()
+    print("開始執行RunWordCount")
+    
+    sc=CreateSparkContext()
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+    sqlContext=SQLContext(sc)
+    
+    documents = sc.textFile("data/food/304.txt").map(lambda line: (line.split("|")))
+    print ("載入字詞完成")                                                                                                                                      
+    sentence=documents.map(lambda p:Row(id=int(p[0]),title=(p[1]),context=(p[2]),sentence=(p[3].split(" ")))) 
+    sentence_df=sqlContext.createDataFrame(sentence) 
+    vectorizer = CountVectorizer(inputCol="sentence", outputCol="features").fit(sentence_df)
+    vocabulary=vectorizer.vocabulary
+    print len(vectorizer.vocabulary)
+    print len(vocabulary)
+    
+        
+    print ("Data frame OK")
+    sen=sentence_df.select("sentence").collect()
+    sen_list=list()
+    for i in sen:
+        sen_list.append(i.sentence)
+    documents= sc.parallelize(sen_list)
+    hashingTF = HashingTF()
+    print ("documents index OK")
+    
+    end = time.time()
+    elapsed = end - start
+    print "Time taken: ", elapsed, "seconds."
+    sc.stop()
+    
+   

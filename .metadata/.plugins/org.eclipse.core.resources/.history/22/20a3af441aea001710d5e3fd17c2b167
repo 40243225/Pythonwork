@@ -1,0 +1,135 @@
+# -*- coding: utf8 -*-
+# coding: utf8
+import xml.etree.cElementTree
+import urllib2
+import jieba
+import codecs
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn import feature_extraction
+import os
+import codecs
+import sys
+import string
+from bokeh.core.validation.errors import codes
+from sklearn.feature_extraction import stop_words
+def newFileName(path,old,new):
+    newfileName=path.replace(old,new)
+    return newfileName
+
+def jieba_article(path):
+    
+    jieba.load_userdict("./dict/userdict.txt")
+    ET= xml.etree.cElementTree
+    tree=ET.ElementTree(file=path)
+    path =newFileName(path,"orignalfile",'tfidf')
+    path =newFileName(path,".xml",'')
+    print path
+    if not os.path.exists(path):
+        os.makedirs(path)
+    root = tree.getroot()
+    str1=root[1].text.replace('　'.decode('utf-8'),",")
+    str2=root[0].text.replace('　'.decode('utf-8'),",")
+    str2=str2+str1
+    seg_list = jieba.cut(str2)
+    fout=codecs.open(path+"/input.txt",'w',encoding='utf-8')
+    fout.write(" ".join(seg_list))
+    fout.write("\n")
+    fout.close()
+    
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        pass
+ 
+    try:
+        import unicodedata
+        unicodedata.numeric(s)
+        return True
+    except (TypeError, ValueError):
+        pass
+ 
+    return False
+
+def getFileName(path):
+    fileName =list()
+    for dirname, dirnames, filenames in os.walk(path):
+        # print path to all subdirectories first.
+        for subdirname in dirnames:
+            os.path.join(dirname, subdirname)
+        # print path to all filenames.
+        for filename in filenames:
+            fileName.append(os.path.join(dirname, filename))
+    return fileName;
+def getIutputFileName(path):
+    fileName =list()
+    for dirname, dirnames, filenames in os.walk(path):
+        # print path to all subdirectories first.
+        for subdirname in dirnames:
+            os.path.join(dirname, subdirname)
+        # print path to all filenames.
+        for filename in filenames:
+            if "input.txt" in filename:
+                fileName.append(os.path.join(dirname, filename)) 
+    return fileName;
+def setstopwords():
+    fopen=codecs.open("./dict/stop_words.txt","r",encoding='utf-8')
+    linelist=[]
+    while True:
+        line=fopen.readline()
+        linelist.append(line)
+        if not line: 
+            break
+    return linelist
+    fopen.close()
+def Tfidf(filelist,fdic,stop_w) :
+    corpus = []
+    for ff in filelist :
+        f = codecs.open(ff, 'r3' ,encoding='utf-8')
+        content = f.read()
+        f.close()
+        corpus.append(content)    
+    vectorizer = CountVectorizer()    
+    transformer = TfidfTransformer()
+    tfidf = transformer.fit_transform(vectorizer.fit_transform(corpus))
+    
+    word = vectorizer.get_feature_names() #所有文本的关键字
+    weight = tfidf.toarray()              #对应的tfidf矩阵
+    #sFilePath = './data/New'
+    # 这里将每份文档词语的TF-IDF写入tfidffile文件夹中保存
+    stop_temp=list()
+    '''紀錄停止字位置'''
+    for i in range(len(word)):
+        temp=word[i]+"\n".decode('utf-8')
+        if temp in stop_w:
+            stop_temp.append(i)
+        
+    for i in range(len(weight)) :
+        fdic[i]=newFileName(fdic[i],"input.txt","output.txt")
+        print u"--------Writing all the tf-idf in the",fdic[i]
+        f = codecs.open(fdic[i],'w',encoding='utf-8')
+        for j in range(len(word)) :
+            temp=word[j]+"\n".decode('utf-8')
+            if j not in stop_temp and weight[i][j]>0.1: 
+                    f.write(word[j]+","+str(weight[i][j])+"\n")
+        f.close()
+if __name__ == "__main__" :
+    allfile =getFileName('./data/News/orignalfile/')
+    stopw=setstopwords()
+    print ("開始斷詞...")
+    for data in allfile:
+        print data
+        jieba_article(data)
+    print("斷詞完成")
+    inputfile =getIutputFileName('./data/News/tfidf/')
+    fdic=dict()
+    count =0
+    for ff in inputfile :
+        fdic[count]=ff
+        #print fdic[count]
+        count+=1
+    print("TF-IDF開始")
+    Tfidf(inputfile,fdic,stopw)
+    print("TF-IDF完成")

@@ -1,0 +1,63 @@
+# -*- coding: utf8 -*-
+# coding: utf8
+
+from pyspark import SparkContext
+from pyspark import  SparkConf
+from pyspark.sql import Row
+from pyspark.sql import SQLContext
+from pyspark.ml.feature import StringIndexer
+from pyspark.ml.feature import  Tokenizer
+from pyspark.mllib.feature import HashingTF, IDF
+from pyspark.ml.feature import CountVectorizer
+import sys
+
+def SetLogger( sc ):
+    logger = sc._jvm.org.apache.log4j
+    logger.LogManager.getLogger("org"). setLevel( logger.Level.ERROR )
+    logger.LogManager.getLogger("akka").setLevel( logger.Level.ERROR )
+    logger.LogManager.getRootLogger().setLevel(logger.Level.ERROR)
+    
+def SetPath(sc):
+    global Path
+    if sc.master[0:5]=="local" :
+        Path="file:/home/hduser/pythonwork/PythonProject/"
+    else:   
+        Path="hdfs://master:9000/user/hduser/"
+       
+def  CreateSparkContext():
+    sparkConf =SparkConf().setAppName("mlTF-IDF").set("spark.ui.showConsoleProgress","false")
+    sc = SparkContext(conf = sparkConf)
+    print("master="+sc.master)
+    SetLogger(sc)
+    SetPath(sc)
+    return (sc)
+    
+if __name__ == "__main__":
+    print("開始執行RunWordCount")
+    sc=CreateSparkContext()
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+    sqlContext=SQLContext(sc)
+    documents = sc.textFile("data/food/304.txt").map(lambda line: (line.split("|")))
+                                                                                                                                               
+    sentence=documents.map(lambda p:Row(id=int(p[0]),title=(p[1]),context=(p[2]),sentence=(p[3].split(" ")))) 
+    sentence_df=sqlContext.createDataFrame(sentence) 
+    vectorizer = CountVectorizer(inputCol="sentence", outputCol="features").fit(sentence_df)
+    
+    doc=sentence_df.select("sentence").collect()
+    for i in doc:
+        print i.sentence
+    
+    hashingTF = HashingTF()
+    word_list=list()
+    for i in range(len(vectorizer.vocabulary)):
+        indx=hashingTF.indexOf(vectorizer.vocabulary[i])
+        word_list.append((indx,vectorizer.vocabulary[i]))
+    wordindex=sc.parallelize(word_list)
+    wordMap=wordindex.collectAsMap()
+    bcwordindex=sc.broadcast(wordMap)
+    
+   
+    sc.stop()
+    
+   

@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;PythonProject/MLlib pratice/TF-IDF.py&apos; to &apos;mlTF-IDF.py&apos;" description="Rename resource &apos;TF-IDF.py&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="MLlib pratice/TF-IDF.py" name="mlTF-IDF.py" stamp="1515307962041" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;PythonProject/dataframe&apos; to &apos;dataframe.py&apos;" description="Rename resource &apos;dataframe&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="dataframe" name="dataframe.py" stamp="1515315229728" updateReferences="true"/>
+</session>

@@ -1,0 +1,31 @@
+# -*- coding: UTF-8 -*-
+from pyspark import SparkContext
+from pyspark import  SparkConf
+
+def SetLogger( sc ):
+    logger = sc._jvm.org.apache.log4j
+    logger.LogManager.getLogger("org"). setLevel( logger.Level.ERROR )
+    logger.LogManager.getLogger("akka").setLevel( logger.Level.ERROR )
+    logger.LogManager.getRootLogger().setLevel(logger.Level.ERROR)
+    
+def SetPath(sc):
+    global Path
+    if sc.master[0:5]=="local" :
+        Path="file:/home/hduser/pythonwork/PythonProject/"
+    else:   
+        Path="hdfs://master:9000/user/hduser/"
+
+def  CreateSparkContext():
+    sparkConf =SparkConf().setAppName("wordcount").set("spark.ui.showConsoleProgress","false")
+    sc = SparkContext(conf = sparkConf)
+    print("master="+sc.master)
+    SetLogger(sc)
+    SetPath(sc)
+    return (sc)
+
+if __name__ == "__main__":
+    print("開始執行RunWordCount")
+    sc=CreateSparkContext()
+    text =sc.textFile(Path+"data/LICENSE.txt")
+    print("文字檔共"+str(text.count())+"行")
+    

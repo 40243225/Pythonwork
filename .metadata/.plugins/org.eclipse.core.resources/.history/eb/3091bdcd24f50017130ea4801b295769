@@ -1,0 +1,72 @@
+# -*- coding: utf8 -*-
+# coding: utf8
+from pyspark import SparkContext
+from pyspark import  SparkConf
+from pyspark.sql import Row
+from pyspark.sql import SQLContext
+from pyspark.ml.feature import StringIndexer
+from pyspark.ml.feature import  Tokenizer
+from pyspark.mllib.feature import HashingTF, IDF
+from pyspark.ml.feature import CountVectorizer
+
+def SetLogger( sc ):
+    logger = sc._jvm.org.apache.log4j
+    logger.LogManager.getLogger("org"). setLevel( logger.Level.ERROR )
+    logger.LogManager.getLogger("akka").setLevel( logger.Level.ERROR )
+    logger.LogManager.getRootLogger().setLevel(logger.Level.ERROR)
+    
+def SetPath(sc):
+    global Path
+    if sc.master[0:5]=="local" :
+        Path="file:/home/hduser/pythonwork/PythonProject/"
+    else:   
+        Path="hdfs://master:9000/user/hduser/"
+       
+def  CreateSparkContext():
+    sparkConf =SparkConf().setAppName("mlTF-IDF").set("spark.ui.showConsoleProgress","false")
+    sc = SparkContext(conf = sparkConf)
+    print("master="+sc.master)
+    SetLogger(sc)
+    SetPath(sc)
+    return (sc)
+
+if __name__ == "__main__":
+    print("開始執行RunWordCount")
+    sc=CreateSparkContext()
+    
+    sqlContext=SQLContext(sc)
+    documents = sc.textFile("data/food/1.txt").map(lambda line: (int(line.split(" ")[0]),line[2:].split(" ")))
+    sentence=documents.map(lambda p:Row(label=int(p[0]),sentence=(p[1])))
+    sentence_df=sqlContext.createDataFrame(sentence)
+    vectorizer = CountVectorizer(inputCol="sentence", outputCol="features").fit(sentence_df)
+    documents = sc.textFile("data/food/1.txt").map(lambda line: (line[2:].split(" ")))
+    
+    hashingTF = HashingTF()
+    word_list=list()
+    for i in range(len(vectorizer.vocabulary)):
+        indx=hashingTF.indexOf(vectorizer.vocabulary[i])
+        word_list.append((indx,vectorizer.vocabulary[i]))
+    wordindex=sc.parallelize(word_list)
+    tf=hashingTF.transform(documents)
+    idf = IDF().fit(tf)
+    tfidf = idf.transform(tf)
+
+    # spark.mllib's IDF implementation provides an option for ignoring terms
+    # which occur in less than a minimum number of documents.
+    # In such cases, the IDF for these terms is set to 0.
+    # This feature can be used by passing the minDocFreq value to the IDF constructor.
+    idfIgnore = IDF(minDocFreq=2).fit(tf)
+    tfidfIgnore = idfIgnore.transform(tf)
+    # $example off$
+
+    print("tfidf:")
+    for each in tfidf.collect():
+        ind=each.indices
+        print ind
+
+    print("tfidfIgnore:")
+    for each in tfidfIgnore.collect():
+        print(each)
+    sc.stop()
+    
+   

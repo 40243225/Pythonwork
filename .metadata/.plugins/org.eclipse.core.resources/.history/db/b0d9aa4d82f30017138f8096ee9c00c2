@@ -1,0 +1,38 @@
+# -*- coding: utf8 -*-
+# coding: utf8
+from pyspark import SparkContext
+from pyspark import  SparkConf
+from pyspark.mllib.feature import HashingTF, IDF
+from pyspark.ml.feature import CountVectorizer
+import subprocess
+import os
+def SetLogger( sc ):
+    logger = sc._jvm.org.apache.log4j
+    logger.LogManager.getLogger("org"). setLevel( logger.Level.ERROR )
+    logger.LogManager.getLogger("akka").setLevel( logger.Level.ERROR )
+    logger.LogManager.getRootLogger().setLevel(logger.Level.ERROR)
+    
+def SetPath(sc):
+    global Path
+    if sc.master[0:5]=="local" :
+        Path="file:/home/hduser/pythonwork/PythonProject/"
+    else:   
+        Path="hdfs://master:9000/user/hduser/"
+       
+def  CreateSparkContext():
+    sparkConf =SparkConf().setAppName("mlTF-IDF").set("spark.ui.showConsoleProgress","false")
+    sc = SparkContext(conf = sparkConf)
+    print("master="+sc.master)
+    SetLogger(sc)
+    SetPath(sc)
+    return (sc)
+
+if __name__ == "__main__":
+    print("開始執行RunWordCount")
+    sc=CreateSparkContext()
+    documents = sc.textFile("data/food/1.txt").map(lambda line: (line.split(" ")[0],[line.spilt(" ")]))
+    print documents.collect()
+    
+    sc.stop()
+    
+   

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;PythonProject/TF-IDF-News&apos; to &apos;TF-IDF-News.py&apos;" description="Rename resource &apos;TF-IDF-News&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="TF-IDF-News" name="TF-IDF-News.py" stamp="1514195568006" updateReferences="true"/>
+</session>

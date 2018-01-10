@@ -1,0 +1,69 @@
+# -*- coding: utf8 -*-
+# coding: utf8
+from pyspark import SparkContext
+from pyspark import  SparkConf
+from pyspark.mllib.feature import HashingTF, IDF
+from pyspark.ml.feature import CountVectorizer
+import subprocess
+import os
+def SetLogger( sc ):
+    logger = sc._jvm.org.apache.log4j
+    logger.LogManager.getLogger("org"). setLevel( logger.Level.ERROR )
+    logger.LogManager.getLogger("akka").setLevel( logger.Level.ERROR )
+    logger.LogManager.getRootLogger().setLevel(logger.Level.ERROR)
+    
+def SetPath(sc):
+    global Path
+    if sc.master[0:5]=="local" :
+        Path="file:/home/hduser/pythonwork/PythonProject/"
+    else:   
+        Path="hdfs://master:9000/user/hduser/"
+       
+def  CreateSparkContext():
+    sparkConf =SparkConf().setAppName("mlTF-IDF").set("spark.ui.showConsoleProgress","false")
+    sc = SparkContext(conf = sparkConf)
+    print("master="+sc.master)
+    SetLogger(sc)
+    SetPath(sc)
+    return (sc)
+def spilts(line):
+    
+    str=i+","+line.split(" ")
+    i=i
+    return str
+if __name__ == "__main__":
+    print("開始執行RunWordCount")
+    sc=CreateSparkContext()
+    i=0
+    documents = sc.textFile("data/food/1.txt").map(spilts)
+    print documents.collect()
+    hashingTF = HashingTF(9)
+    
+    tf = hashingTF.transform(documents)
+    
+    # While applying HashingTF only needs a single pass to the data, applying IDF needs two passes:
+    # First to compute the IDF vector and second to scale the term frequencies by IDF.
+    tf.cache()
+    for each in tf.collect():
+        print (each)
+    idf = IDF().fit(tf)
+    tfidf = idf.transform(tf)
+    
+    # spark.mllib's IDF implementation provides an option for ignoring terms
+    # which occur in less than a minimum number of documents.
+    # In such cases, the IDF for these terms is set to 0.
+    # This feature can be used by passing the minDocFreq value to the IDF constructor.
+    idfIgnore = IDF(minDocFreq=2).fit(tf)
+    tfidfIgnore = idfIgnore.transform(tf)
+    print("tfidf:")
+    '''
+    for each in tfidf.collect():
+        print(each)
+
+    print("tfidfIgnore:")
+    for each in tfidfIgnore.collect():
+        print(each)
+    '''
+    sc.stop()
+    
+   
