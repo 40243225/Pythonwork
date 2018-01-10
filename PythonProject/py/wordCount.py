@@ -1,0 +1,40 @@
+# -*- coding: UTF-8 -*-
+from pyspark import SparkContext
+from pyspark import  SparkConf
+import subprocess
+import os
+def SetLogger( sc ):
+    logger = sc._jvm.org.apache.log4j
+    logger.LogManager.getLogger("org"). setLevel( logger.Level.ERROR )
+    logger.LogManager.getLogger("akka").setLevel( logger.Level.ERROR )
+    logger.LogManager.getRootLogger().setLevel(logger.Level.ERROR)
+    
+def SetPath(sc):
+    global Path
+    if sc.master[0:5]=="local" :
+        Path="file:/home/hduser/pythonwork/PythonProject/"
+    else:   
+        Path="hdfs://master:9000/user/hduser/"
+       
+def  CreateSparkContext():
+    sparkConf =SparkConf().setAppName("wordcount").set("spark.ui.showConsoleProgress","false")
+    sc = SparkContext(conf = sparkConf)
+    print("master="+sc.master)
+    SetLogger(sc)
+    SetPath(sc)
+    return (sc)
+
+if __name__ == "__main__":
+    print("開始執行RunWordCount")
+    sc=CreateSparkContext()
+    text =sc.textFile(Path+"data/README.md")
+    print("文字檔共"+str(text.count())+"行")
+    cRDD=text.flatMap(lambda line: line.split(',')).map(lambda x:(x,1)).reduceByKey(lambda x,y:x+y)
+    print(cRDD.collect())
+    print("開始儲存至文字檔...")
+    cRDD1=cRDD.collect()
+    try:
+         cRDD.saveAsTextFile(Path+ "data/output")
+    except Exception as e:
+        print("輸出目錄已經存在,請先刪除原有目錄")
+    sc.stop()
