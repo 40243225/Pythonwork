@@ -12,6 +12,7 @@ from pyspark.ml.feature import CountVectorizer
 import sys
 import time
 
+
 def SetLogger( sc ):
     logger = sc._jvm.org.apache.log4j
     logger.LogManager.getLogger("org"). setLevel( logger.Level.ERROR )
@@ -32,19 +33,27 @@ def  CreateSparkContext():
     SetLogger(sc)
     SetPath(sc)
     return (sc)
-    
+def getmax(ind,val,count):
+    result=list()
+    for i in range(0,count):    
+        maxval=max(val)
+        maxindex=val.index(maxval)
+        result.append(ind[maxindex])
+        ind.remove(ind[maxindex])
+        val.remove(val[maxindex])
+    return result
 if __name__ == "__main__":
     start = time.time()
-    print("開始執行RunWordCount")
+    print("開始執行TF-IDF")
     
     sc=CreateSparkContext()
     reload(sys)
     sys.setdefaultencoding('utf-8')
     sqlContext=SQLContext(sc)
     
-    documents = sc.textFile("data/food/304.txt").map(lambda line: (line.split("|")))
-    print ("載入字詞完成")                                                                                                                                      
-    sentence=documents.map(lambda p:Row(id=int(p[0]),title=(p[1]),context=(p[2]),sentence=(p[3].split(" ")))) 
+    documents = sc.textFile("data/food/food.txt").map(lambda line: (line.split("|")))
+    print ("載入字詞完成")                                                                                                                             
+    sentence=documents.map(lambda p:Row(id=int(p[0]),title=(p[1]),context=(p[2]),sentence=(p[3].split(" "))))
     sentence_df=sqlContext.createDataFrame(sentence) 
     vectorizer = CountVectorizer(inputCol="sentence", outputCol="features").fit(sentence_df)
     print ("Data frame OK")
@@ -68,28 +77,40 @@ if __name__ == "__main__":
     tf=hashingTF.transform(documents)
     idf = IDF().fit(tf)
     tfidf = idf.transform(tf)
-
     # spark.mllib's IDF implementation provides an option for ignoring terms
     # which occur in less than a minimum number of documents.
     # In such cases, the IDF for these terms is set to 0.
     # This feature can be used by passing the minDocFreq value to the IDF constructor.
+    '''
     idfIgnore = IDF(minDocFreq=2).fit(tf)
     tfidfIgnore = idfIgnore.transform(tf)
+    '''
     print("TF-IDF完成")
-    
-    print("tfidf:")
     i=1
+    keywordlist=list()
     for each in tfidf.collect():
-        ind=each.indices
-        print str(i)+":"
-        for key in ind:
-            print bcwordindex.value[int(key)].encode('utf-8')+":" +str(each[int(key)])
-        i=i+1    
-
+        ind=each.indices.tolist()
+        val=each.values.tolist()
+        if len(ind)>=5:   
+            result=getmax(ind,val,5)
+        else:
+            result=getmax(ind,val,len(ind))
+        bclist=list()
+        for i in result:
+            bclist.append(bcwordindex.value[i])
+        keywordlist.append(bclist)     
+        
+    
+    #keywords=sqlContext.createDataFrame()
+    '''
     print("tfidfIgnore:")
     for each in tfidfIgnore.collect():
-        print(each)
-    
+        ind=each.indices.tolist()
+        val=each.values.tolist()
+        result=getmax(ind,val,5)
+        for i in result:
+            print bcwordindex.value[i]
+    '''
     end = time.time()
     elapsed = end - start
     print "Time taken: ", elapsed, "seconds."
