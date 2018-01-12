@@ -44,7 +44,7 @@ def jieba_article(stopw):
 	
 	for i in range(len(cat)):
 		text=re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', context[i])
-		text=re.sub("[\s+\.\!\/_,$%^:*(+\"\']+|[+——！，。？、~@#￥%……&*（）]+".decode("utf8"), "".decode("utf8"),text)
+		text=re.sub("[\s+\.\!\/_,$%^:*(+\"\']+|[+——;【】()><！，。？、~@#￥%……&*（）]+".decode("utf8"), "".decode("utf8"),text)
 		str1="".join(title[i].split())
 		str2="".join(text.split())
 		seg_list = jieba.cut(str1+str2)
