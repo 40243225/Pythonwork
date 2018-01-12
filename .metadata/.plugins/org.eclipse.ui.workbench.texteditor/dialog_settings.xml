@@ -2,27 +2,27 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value=":" key="selection"/>
+		<item value="『" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="false" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="『"/>
+			<item value="〞"/>
+			<item value="』"/>
+			<item value="="/>
+			<item value="℃"/>
+			<item value="～"/>
+			<item value=")"/>
+			<item value="&gt;"/>
+			<item value=";"/>
 			<item value=":"/>
-			<item value="1"/>
-			<item value="|"/>
-			<item value="!"/>
-			<item value="&amp;"/>
-			<item value="@"/>
-			<item value="#"/>
-			<item value="&apos;"/>
-			<item value="+"/>
-			<item value="*"/>
-			<item value="?"/>
-			<item value="&quot;"/>
-			<item value="}"/>
-			<item value="]"/>
-			<item value="」"/>
+			<item value="血"/>
+			<item value="；"/>
+			<item value="&lt;"/>
+			<item value="\n"/>
+			<item value="˚"/>
 		</list>
 		<list key="replacehistory">
 			<item value="n"/>

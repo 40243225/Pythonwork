@@ -1,1 +1,1 @@
-INSxml.etree.ElementTree|/usr/lib/python2.7/xml/etree/ElementTree.py
+INSxml.etree.cElementTree|/usr/lib/python2.7/xml/etree/cElementTree.py

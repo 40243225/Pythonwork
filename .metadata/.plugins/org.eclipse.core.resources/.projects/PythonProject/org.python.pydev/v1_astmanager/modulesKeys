@@ -22,5 +22,13 @@ jieba.posseg.prob_trans|/home/hduser/pythonwork/PythonProject/jieba/posseg/prob_
 jieba.posseg.viterbi|/home/hduser/pythonwork/PythonProject/jieba/posseg/viterbi.py
 jiebatest|/home/hduser/pythonwork/PythonProject/jiebatest.py
 pratice|/home/hduser/pythonwork/PythonProject/pratice.py
+py.RssParser|/home/hduser/pythonwork/PythonProject/py/RssParser.py
+py.TFTEST|/home/hduser/pythonwork/PythonProject/py/TFTEST.py
+py.dataframe|/home/hduser/pythonwork/PythonProject/py/dataframe.py
+py.htmlparser|/home/hduser/pythonwork/PythonProject/py/htmlparser.py
+py.jiebatest|/home/hduser/pythonwork/PythonProject/py/jiebatest.py
+py.pratice|/home/hduser/pythonwork/PythonProject/py/pratice.py
+py.test|/home/hduser/pythonwork/PythonProject/py/test.py
+py.wordCount|/home/hduser/pythonwork/PythonProject/py/wordCount.py
 test|/home/hduser/pythonwork/PythonProject/test.py
 wordCount|/home/hduser/pythonwork/PythonProject/wordCount.py
